@@ -1,0 +1,19 @@
+export const categories = [
+  { slug: 'medicines', name: 'Medicines', icon: '💊', count: 420 },
+  { slug: 'vitamins', name: 'Vitamins & Supplements', icon: '🍊', count: 186 },
+  { slug: 'personal-care', name: 'Personal Care', icon: '🧴', count: 240 },
+  { slug: 'baby-care', name: 'Baby Care', icon: '🍼', count: 96 },
+  { slug: 'diabetes-care', name: 'Diabetes Care', icon: '🩸', count: 74 },
+  { slug: 'womens-care', name: "Women's Care", icon: '🌸', count: 132 },
+  { slug: 'mens-care', name: "Men's Care", icon: '🧔', count: 88 },
+  { slug: 'oral-care', name: 'Oral Care', icon: '🪥', count: 64 },
+  { slug: 'skin-care', name: 'Skin Care', icon: '✨', count: 210 },
+  { slug: 'hair-care', name: 'Hair Care', icon: '💇', count: 118 },
+  { slug: 'devices', name: 'Health Devices', icon: '🌡️', count: 58 },
+  { slug: 'ayurveda', name: 'Ayurveda', icon: '🌿', count: 145 },
+  { slug: 'first-aid', name: 'First Aid', icon: '🩹', count: 42 },
+  // Kept last per product decision — discreet naming/icon, styled the same
+  // as every other category (no special "adult content" gating; this is an
+  // ordinary pharmacy product category, same as any other).
+  { slug: 'sexual-wellness', name: 'Sexual Wellness', icon: '🩷', count: 55 },
+]
