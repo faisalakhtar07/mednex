@@ -90,6 +90,9 @@ export default function Login() {
       <p className="text-center text-xs text-navy-900/50 mt-6">
         New here? <Link to="/signup" className="focus-ring text-teal-700 font-semibold">Create an account</Link>
       </p>
+      <p className="text-center text-xs text-navy-900/40 mt-2">
+        Are you a doctor or clinic staff? <Link to="/staff/login" className="focus-ring text-teal-700 font-semibold">Login here</Link>
+      </p>
     </div>
   )
 }
