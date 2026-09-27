@@ -17,6 +17,7 @@ import LabTestDetail from './pages/LabTestDetail.jsx'
 import Login from './pages/Login.jsx'
 import Signup from './pages/Signup.jsx'
 import ForgotPassword from './pages/ForgotPassword.jsx'
+import ResetPassword from './pages/ResetPassword.jsx'
 import Profile from './pages/Profile.jsx'
 import AddressBook from './pages/AddressBook.jsx'
 import NotificationsPage from './pages/NotificationsPage.jsx'
@@ -64,6 +65,7 @@ export default function App() {
             <Route path="/login" element={<PageWrap><Login /></PageWrap>} />
             <Route path="/signup" element={<PageWrap><Signup /></PageWrap>} />
             <Route path="/forgot-password" element={<PageWrap><ForgotPassword /></PageWrap>} />
+            <Route path="/reset-password" element={<PageWrap><ResetPassword /></PageWrap>} />
             <Route path="/profile" element={<PageWrap><Profile /></PageWrap>} />
             <Route path="/profile/addresses" element={<PageWrap><AddressBook /></PageWrap>} />
             <Route path="/profile/notifications" element={<PageWrap><NotificationsPage /></PageWrap>} />

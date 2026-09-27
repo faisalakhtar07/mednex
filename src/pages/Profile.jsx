@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { User, MapPin, Bell, LogOut, ChevronRight, ShieldCheck, LayoutDashboard, CalendarClock } from 'lucide-react'
+import { User, MapPin, Bell, BellRing, LogOut, ChevronRight, ShieldCheck, LayoutDashboard, CalendarClock } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
+import { getPushStatus, enablePush, disablePush } from '../utils/push.js'
 
 // NOTE: "My Orders", "Prescriptions" and "Wishlist" menu items were removed
 // along with the medical-store marketplace. "My Appointments" will replace
@@ -16,6 +18,31 @@ export default function Profile() {
   const { user, loading, logout, isAuthenticated } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
+  const [pushStatus, setPushStatus] = useState('unsupported') // 'unsupported' | 'denied' | 'subscribed' | 'not-subscribed'
+  const [pushBusy, setPushBusy] = useState(false)
+
+  useEffect(() => {
+    if (isAuthenticated) getPushStatus().then(setPushStatus)
+  }, [isAuthenticated])
+
+  const togglePush = async () => {
+    setPushBusy(true)
+    try {
+      if (pushStatus === 'subscribed') {
+        await disablePush()
+        setPushStatus('not-subscribed')
+        showToast('Push notifications turned off')
+      } else {
+        await enablePush()
+        setPushStatus('subscribed')
+        showToast('Push notifications enabled')
+      }
+    } catch (err) {
+      showToast(err.message || 'Could not update push notifications')
+    } finally {
+      setPushBusy(false)
+    }
+  }
 
   if (loading) return <div className="max-w-2xl mx-auto px-5 py-16 text-center text-sm text-navy-900/40">Loading...</div>
   if (!isAuthenticated) return <Navigate to="/login" replace />
@@ -81,6 +108,28 @@ export default function Profile() {
             <ChevronRight size={16} className="text-navy-900/30" />
           </Link>
         ))}
+        {pushStatus !== 'unsupported' && pushStatus !== 'denied' && (
+          <button onClick={togglePush} disabled={pushBusy} className="focus-ring w-full flex items-center gap-3.5 p-4 hover:bg-skyfaint transition-colors text-left disabled:opacity-50">
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${pushStatus === 'subscribed' ? 'bg-mint-500/10 text-mint-700' : 'bg-teal-50 text-teal-600'}`}>
+              <BellRing size={17} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold">Push Notifications</p>
+              <p className="text-xs text-navy-900/40">{pushStatus === 'subscribed' ? 'Enabled on this device — tap to turn off' : 'Get alerts even when the app is closed'}</p>
+            </div>
+          </button>
+        )}
+        {pushStatus === 'denied' && (
+          <div className="flex items-center gap-3.5 p-4 text-left">
+            <div className="w-10 h-10 rounded-lg bg-navy-900/5 text-navy-900/30 flex items-center justify-center shrink-0">
+              <BellRing size={17} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-navy-900/50">Push Notifications</p>
+              <p className="text-xs text-navy-900/40">Blocked in your browser settings — allow notifications for this site to enable.</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <button onClick={handleLogout} className="focus-ring flex items-center gap-2 text-sm font-semibold text-coral mt-6 px-1">

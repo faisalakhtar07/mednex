@@ -1,32 +1,27 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { ShieldCheck, Wand2, Eye, EyeOff } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ShieldCheck, Mail } from 'lucide-react'
 import Button from '../components/Button.jsx'
-import { generatePassword } from '../utils/generatePassword.js'
 import { api } from '../utils/api.js'
-import { useToast } from '../context/ToastContext.jsx'
 
-// No verification step, by explicit product decision — enter your mobile
-// number and set a new password directly, no OTP anywhere in the app.
+// Email-based reset: we send a one-time link (valid 15 min) instead of
+// letting anyone with a mobile number reset the account directly — see
+// mednex-backend/routes/authRoutes.js for why that changed.
 export default function ForgotPassword() {
-  const [mobile, setMobile] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const navigate = useNavigate()
-  const { showToast } = useToast()
+  const [sent, setSent] = useState(false)
 
   const submit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      await api.resetPasswordDirect(mobile.trim(), newPassword)
-      showToast('Password updated — log in with your new password')
-      navigate('/login')
+      await api.forgotPassword(email.trim())
+      setSent(true)
     } catch (err) {
-      setError(err.message || 'Could not reset password')
+      setError(err.message || 'Could not send reset email')
     } finally {
       setLoading(false)
     }
@@ -39,42 +34,32 @@ export default function ForgotPassword() {
           <ShieldCheck size={22} />
         </div>
         <h1 className="text-xl font-display font-bold">Reset your password</h1>
-        <p className="text-sm text-navy-900/50">Enter your mobile number and set a new password.</p>
+        <p className="text-sm text-navy-900/50">Enter your account email and we'll send you a reset link.</p>
       </div>
 
-      <form onSubmit={submit} className="space-y-3.5">
-        <input
-          required
-          type="tel"
-          inputMode="numeric"
-          maxLength={10}
-          placeholder="10-digit mobile number"
-          value={mobile}
-          onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-          className="focus-ring w-full border border-navy-900/15 rounded-lg px-3.5 py-2.5 text-sm"
-        />
-        <div className="relative">
-          <input
-            required
-            type={showPassword ? 'text' : 'password'}
-            minLength={6}
-            placeholder="New password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="focus-ring w-full border border-navy-900/15 rounded-lg pl-3.5 pr-9 py-2.5 text-sm"
-          />
-          <button type="button" onClick={() => setShowPassword((s) => !s)} className="focus-ring absolute right-3 top-1/2 -translate-y-1/2 text-navy-900/40" aria-label="Toggle password">
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
+      {sent ? (
+        <div className="bg-mint-500/10 text-mint-700 rounded-xl2 p-4 text-sm text-center">
+          If an account exists for that email, a reset link has been sent — check your inbox (and spam folder). The link expires in 15 minutes.
         </div>
-        <button type="button" onClick={() => { setNewPassword(generatePassword(12)); setShowPassword(true) }} className="focus-ring flex items-center gap-1.5 text-xs font-semibold text-teal-700">
-          <Wand2 size={13} /> Generate secure password
-        </button>
-        {error && <p className="text-xs text-coral">{error}</p>}
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Resetting...' : 'Reset Password'}
-        </Button>
-      </form>
+      ) : (
+        <form onSubmit={submit} className="space-y-3.5">
+          <div className="relative">
+            <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-900/30" />
+            <input
+              required
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="focus-ring w-full border border-navy-900/15 rounded-lg pl-10 pr-3.5 py-2.5 text-sm"
+            />
+          </div>
+          {error && <p className="text-xs text-coral">{error}</p>}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Sending...' : 'Send Reset Link'}
+          </Button>
+        </form>
+      )}
 
       <p className="text-center text-xs text-navy-900/50 mt-6">
         <Link to="/login" className="focus-ring text-teal-700 font-semibold">Back to login</Link>

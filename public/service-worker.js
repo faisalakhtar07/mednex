@@ -41,3 +41,43 @@ self.addEventListener('fetch', (event) => {
     })
   )
 })
+
+/* ---------- Web Push (VAPID) ---------- */
+// Backend sends payload as JSON: { title, body, url } — see
+// mednex-backend/utils/sendPush.js. Shown as a native browser/OS
+// notification even when the app tab isn't open.
+self.addEventListener('push', (event) => {
+  let data = { title: 'MedNex', body: 'You have a new update.', url: '/' }
+  try {
+    if (event.data) data = { ...data, ...event.data.json() }
+  } catch (err) {
+    // non-JSON payload — fall back to the defaults above
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      data: { url: data.url || '/' },
+    })
+  )
+})
+
+// Clicking the notification focuses an existing MedNex tab if one's open,
+// otherwise opens a new one at the relevant page (appointments, dashboard).
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const targetUrl = event.notification.data?.url || '/'
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientsArr) => {
+      const existing = clientsArr.find((c) => new URL(c.url).origin === self.location.origin)
+      if (existing) {
+        existing.focus()
+        existing.navigate?.(targetUrl)
+        existing.postMessage?.({ type: 'push-navigate', url: targetUrl })
+        return
+      }
+      return self.clients.openWindow(targetUrl)
+    })
+  )
+})

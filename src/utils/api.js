@@ -55,7 +55,8 @@ function withId(obj) {
 
 export const api = {
   // Auth — mobile number + password only (OTP removed entirely).
-  resetPasswordDirect: (mobile, newPassword) => request('/auth/password/reset-direct', { method: 'POST', body: { mobile, newPassword } }),
+  forgotPassword: (email) => request('/auth/password/forgot', { method: 'POST', body: { email } }),
+  resetPassword: ({ email, token, newPassword }) => request('/auth/password/reset', { method: 'POST', body: { email, token, newPassword } }),
   setPassword: (newPassword, currentPassword) => request('/auth/password', { method: 'PUT', body: { newPassword, currentPassword } }),
   updateProfile: (payload) => request('/auth/profile', { method: 'PUT', body: payload }),
   register: (payload) => request('/auth/register', { method: 'POST', body: payload }),
@@ -86,6 +87,11 @@ export const api = {
   myNotifications: () => request('/notifications/mine').then((d) => ({ ...d, notifications: withId(d.notifications) })),
   markNotificationRead: (id) => request(`/notifications/${id}/read`, { method: 'PUT' }),
   markAllNotificationsRead: () => request('/notifications/read-all', { method: 'PUT' }),
+
+  // Browser push notifications (VAPID) — see utils/push.js for the subscribe flow.
+  getVapidPublicKey: () => request('/push/vapid-public-key'),
+  subscribePush: (subscription) => request('/push/subscribe', { method: 'POST', body: subscription }),
+  unsubscribePush: (endpoint) => request('/push/unsubscribe', { method: 'POST', body: { endpoint } }),
 
   // "MedNex Picks" — admin-curated homepage showcase cards (name/price/image)
   getFeatured: () => request('/featured').then(withId),
