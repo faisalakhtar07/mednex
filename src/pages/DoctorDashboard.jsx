@@ -259,6 +259,17 @@ function SubscriptionTab({ doctor, showToast, onDoctorUpdate }) {
     setPayingPlanId(planId)
     try {
       const subscription = await api.subscribeToPlan(planId)
+      const order = await api.createSubscriptionOrder(subscription.id)
+
+      // Free (₹0) plans are activated directly on the backend — no Razorpay
+      // checkout to open at all (see routes/paymentRoutes.js).
+      if (order.free) {
+        showToast('Subscription activated!')
+        onDoctorUpdate?.()
+        load()
+        return
+      }
+
       const keyInfo = await api.getRazorpayKey()
       if (!keyInfo.configured) {
         showToast('Online payments are not configured on the server yet')
@@ -266,7 +277,6 @@ function SubscriptionTab({ doctor, showToast, onDoctorUpdate }) {
       }
       const loaded = await loadRazorpayScript()
       if (!loaded) { showToast('Could not load payment gateway'); return }
-      const order = await api.createSubscriptionOrder(subscription.id)
       const rzp = new window.Razorpay({
         key: keyInfo.keyId,
         amount: order.amount,
