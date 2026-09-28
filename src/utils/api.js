@@ -81,6 +81,7 @@ export const api = {
   // Subscription plans + this doctor's subscription
   getPlans: () => request('/subscriptions/plans').then(withId),
   subscribeToPlan: (planId) => request('/subscriptions/mine', { method: 'POST', body: { planId } }).then(withId),
+  startFreeTrial: () => request('/subscriptions/start-free-trial', { method: 'POST' }),
   getMySubscriptions: () => request('/subscriptions/mine').then(withId),
 
   // Notifications

@@ -251,9 +251,29 @@ function SubscriptionTab({ doctor, showToast, onDoctorUpdate }) {
   const [subs, setSubs] = useState([])
   const [loading, setLoading] = useState(true)
   const [payingPlanId, setPayingPlanId] = useState(null)
+  const [startingTrial, setStartingTrial] = useState(false)
 
   const load = () => Promise.all([api.getPlans(), api.getMySubscriptions()]).then(([p, s]) => { setPlans(p); setSubs(s) }).finally(() => setLoading(false))
   useEffect(() => { load() }, [])
+
+  // Paid plans only — the system-managed free-trial plan (isFreeTrial) is
+  // never bought through here, only via startTrial() below, so it's kept
+  // out of this grid to avoid two confusing "free" cards.
+  const paidPlans = plans.filter((p) => !p.isFreeTrial)
+
+  const startTrial = async () => {
+    setStartingTrial(true)
+    try {
+      await api.startFreeTrial() // never touches Razorpay — activated directly on the backend
+      showToast('Your 15-day free trial has started!')
+      onDoctorUpdate?.()
+      load()
+    } catch (err) {
+      showToast(err.message || 'Could not start free trial')
+    } finally {
+      setStartingTrial(false)
+    }
+  }
 
   const subscribe = async (planId) => {
     setPayingPlanId(planId)
@@ -314,8 +334,21 @@ function SubscriptionTab({ doctor, showToast, onDoctorUpdate }) {
           ? "Your subscription is active — you're visible to patients."
           : 'No active subscription — patients cannot find you in search until you subscribe.'}
       </div>
+
+      {!doctor.hasUsedFreeTrial && doctor.subscriptionStatus !== 'active' && (
+        <div className="rounded-xl2 p-4 mb-6 bg-teal-50 border border-teal-100 flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <p className="text-sm font-semibold text-teal-800">New here? Try MedNex free for 15 days</p>
+            <p className="text-xs text-teal-700/70">No payment required — activates instantly.</p>
+          </div>
+          <Button size="sm" onClick={startTrial} disabled={startingTrial}>
+            {startingTrial ? 'Starting...' : 'Start 15-Day Free Trial'}
+          </Button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {plans.map((p) => (
+        {paidPlans.map((p) => (
           <div key={p.id} className="bg-white rounded-xl2 border border-navy-900/5 shadow-card p-4">
             <p className="text-sm font-semibold">{p.name}</p>
             <p className="text-2xl font-display font-bold text-teal-700 my-1.5">₹{p.price}</p>
