@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { User, MapPin, Bell, BellRing, LogOut, ChevronRight, ShieldCheck, LayoutDashboard, CalendarClock } from 'lucide-react'
+import { User, MapPin, Bell, BellRing, LogOut, ChevronRight, ShieldCheck, LayoutDashboard, CalendarClock, Heart } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { getPushStatus, enablePush, disablePush } from '../utils/push.js'
@@ -10,6 +10,7 @@ import { getPushStatus, enablePush, disablePush } from '../utils/push.js'
 // them once the Doctor Appointment System's appointment list page exists.
 const menu = [
   { icon: CalendarClock, label: 'My Appointments', to: '/appointments', desc: 'Track and manage your appointments' },
+  { icon: Heart, label: 'Saved Doctors', to: '/favorites', desc: 'Your bookmarked doctors' },
   { icon: MapPin, label: 'Saved Addresses', to: '/profile/addresses', desc: 'Manage your saved addresses' },
   { icon: Bell, label: 'Notifications', to: '/profile/notifications', desc: 'Appointment & platform updates' },
 ]

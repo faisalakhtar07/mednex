@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Navigate, Link } from 'react-router-dom'
-import { Clock, MapPin, Hash } from 'lucide-react'
+import { Clock, MapPin, Hash, Star } from 'lucide-react'
 import EmptyState from '../components/EmptyState.jsx'
+import ReviewModal from '../components/ReviewModal.jsx'
 import { api } from '../utils/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
@@ -47,6 +48,7 @@ export default function MyAppointments() {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState(null)
+  const [reviewTarget, setReviewTarget] = useState(null)
 
   const load = () => api.myAppointments().then(setAppointments).finally(() => setLoading(false))
 
@@ -106,10 +108,28 @@ export default function MyAppointments() {
                     {busyId === a.id ? 'Cancelling...' : 'Cancel Appointment'}
                   </button>
                 )}
+                {a.status === 'completed' && !a.reviewed && (
+                  <button
+                    onClick={() => setReviewTarget(a)}
+                    className="focus-ring mt-3 flex items-center gap-1.5 text-xs font-semibold text-teal-700"
+                  >
+                    <Star size={13} /> Rate this doctor
+                  </button>
+                )}
+                {a.status === 'completed' && a.reviewed && (
+                  <p className="mt-3 text-xs text-navy-900/40">You reviewed this appointment. Thanks!</p>
+                )}
               </div>
             )
           })}
         </div>
+      )}
+      {reviewTarget && (
+        <ReviewModal
+          appointment={reviewTarget}
+          onClose={() => setReviewTarget(null)}
+          onSubmitted={load}
+        />
       )}
     </div>
   )

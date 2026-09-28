@@ -93,6 +93,14 @@ export const api = {
   subscribePush: (subscription) => request('/push/subscribe', { method: 'POST', body: subscription }),
   unsubscribePush: (endpoint) => request('/push/unsubscribe', { method: 'POST', body: { endpoint } }),
 
+  // Ratings & Reviews
+  submitReview: (payload) => request('/reviews', { method: 'POST', body: payload }).then(withId),
+  getDoctorReviews: (doctorId, page = 1) => request(`/reviews/doctor/${doctorId}?page=${page}`).then((d) => ({ ...d, reviews: withId(d.reviews) })),
+
+  // Favorite/saved doctors
+  myFavoriteDoctors: () => request('/favorites/mine').then(withId),
+  toggleFavoriteDoctor: (doctorId) => request(`/favorites/${doctorId}`, { method: 'POST' }),
+
   // "MedNex Picks" — admin-curated homepage showcase cards (name/price/image)
   getFeatured: () => request('/featured').then(withId),
 
